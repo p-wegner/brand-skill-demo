@@ -4,7 +4,12 @@ A small, self-contained web presentation showing how an **Agent Skill** can take
 existing content and regenerate it in a company's own brand style — researched,
 designed, and produced automatically.
 
-**Live:** https://p-wegner.github.io/brand-skill-demo/
+**Live:** https://htmlpreview.github.io/?https://github.com/p-wegner/brand-skill-demo/blob/main/index.html
+
+> GitHub Pages is configured (`.github/workflows/pages.yml`) and will serve at
+> `https://p-wegner.github.io/brand-skill-demo/` wherever the Actions runner can
+> reach the public Actions registry. The htmlpreview link above always works and
+> needs no build.
 
 The deck walks a non-technical audience through a concrete before/after example:
 a conference slide ("Drei Säulen für verlässliche KI-Entwicklung") shown first in
