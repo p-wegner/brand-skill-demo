@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Vom generischen Bild zur Marke &mdash; mit einem Agent Skill</title>
+<style>
+  :root {
+    --blue: #155A9F;
+    --blue-dark: #0f3f70;
+    --cyan: #4aa3d8;
+    --coral: #e8623a;
+    --ink: #1d1d1d;
+    --muted: #5b6677;
+    --bg: #f4f8fc;
+    --card: #ffffff;
+    --line: #d8e6f2;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: "Open Sans", "Segoe UI", system-ui, Arial, sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    overflow: hidden;
+  }
+  /* decorative motif */
+  .deck { position: relative; height: 100vh; width: 100vw; }
+  .deck::before, .deck::after {
+    content: ""; position: absolute; pointer-events: none; z-index: 0;
+    border: 2px solid var(--cyan); opacity: .25; transform: rotate(20deg);
+  }
+  .deck::before { width: 120px; height: 120px; top: 8%; right: 6%; border-color: var(--blue); }
+  .deck::after  { width: 70px;  height: 70px;  bottom: 12%; left: 5%; border-color: var(--coral); opacity:.3; }
+
+  .slide {
+    position: absolute; inset: 0; z-index: 1;
+    display: none; flex-direction: column;
+    padding: 5vh 7vw 9vh; opacity: 0;
+    transition: opacity .35s ease;
+  }
+  .slide.active { display: flex; opacity: 1; animation: fade .4s ease; }
+  @keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  .eyebrow { color: var(--blue); font-weight: 700; letter-spacing: .12em; text-transform: uppercase; font-size: 14px; margin-bottom: 14px; }
+  h1 { font-size: clamp(28px, 4.4vw, 56px); font-weight: 300; color: var(--blue); line-height: 1.1; }
+  h1 b { font-weight: 700; }
+  h2 { font-size: clamp(24px, 3.2vw, 40px); font-weight: 300; color: var(--blue); margin-bottom: 24px; }
+  h2 b { font-weight: 700; }
+  p.lead { font-size: clamp(16px, 1.7vw, 22px); color: var(--muted); max-width: 60ch; line-height: 1.5; }
+  .brand-mark { font-size: 22px; font-weight: 700; color: var(--blue); margin-bottom: 40px; }
+  .brand-mark span { font-size: 11px; letter-spacing: .35em; color: var(--muted); display:block; font-weight:400; }
+
+  /* before/after */
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; flex: 1; align-items: stretch; min-height: 0; }
+  .panel { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px; display: flex; flex-direction: column; box-shadow: 0 6px 22px rgba(21,90,159,.06); min-height: 0; }
+  .panel .tag { display:inline-block; align-self:flex-start; font-size: 13px; font-weight: 700; padding: 5px 12px; border-radius: 999px; margin-bottom: 12px; }
+  .panel.before .tag { background: #eef0f2; color: #6b7480; }
+  .panel.after  .tag { background: #e7f1fb; color: var(--blue); }
+  .panel img { width: 100%; height: 100%; object-fit: contain; border-radius: 8px; min-height: 0; }
+  .panel .cap { font-size: 14px; color: var(--muted); margin-top: 12px; line-height: 1.4; }
+  .panel .cap b { color: var(--ink); }
+  .arrow-mid { position:absolute; left:50%; top:55%; transform:translate(-50%,-50%); z-index:3;
+    background: var(--blue); color:#fff; width:54px;height:54px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;font-size:26px; box-shadow:0 6px 16px rgba(21,90,159,.35); }
+
+  /* steps */
+  .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; margin-top: 10px; flex: 1; }
+  .step { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 26px 22px; display:flex; flex-direction:column; box-shadow: 0 6px 22px rgba(21,90,159,.06); }
+  .step .num { width: 44px; height: 44px; border-radius: 50%; background: var(--blue); color:#fff; font-weight:700; font-size:20px; display:flex;align-items:center;justify-content:center; margin-bottom:18px; }
+  .step h3 { font-size: 19px; color: var(--blue); margin-bottom: 10px; }
+  .step p { font-size: 15px; color: var(--muted); line-height: 1.45; }
+
+  /* takeaway list */
+  ul.points { list-style: none; margin-top: 26px; display:flex; flex-direction:column; gap:18px; max-width: 70ch; }
+  ul.points li { font-size: clamp(16px,1.7vw,21px); color: var(--ink); padding-left: 38px; position: relative; line-height:1.45; }
+  ul.points li::before { content: "\2713"; position:absolute; left:0; top:0; color:#fff; background:var(--blue); width:26px;height:26px;border-radius:50%; display:flex;align-items:center;justify-content:center; font-size:14px; }
+  ul.points b { color: var(--blue); }
+
+  .footer-band { margin-top: auto; padding-top: 22px; color: var(--muted); font-size: 14px; }
+
+  /* nav */
+  .nav { position: fixed; bottom: 22px; right: 28px; z-index: 10; display:flex; align-items:center; gap: 14px; }
+  .nav button { border:none; background: var(--blue); color:#fff; width:42px;height:42px;border-radius:50%; font-size:20px; cursor:pointer; box-shadow:0 4px 12px rgba(21,90,159,.3); transition: background .2s; }
+  .nav button:hover { background: var(--blue-dark); }
+  .nav .count { font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .progress { position: fixed; top:0; left:0; height:4px; background: var(--coral); z-index: 10; transition: width .35s ease; }
+  .hint { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); z-index:10; font-size:12px; color:#9aa7b4; }
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<div class="deck" id="deck">
+
+  <!-- 1: Title -->
+  <section class="slide active">
+    <div class="brand-mark">andrena objects<span>OBJECTS</span></div>
+    <div class="eyebrow">Agentic Engineering &mdash; Praxisbeispiel</div>
+    <h1>Vom generischen Bild<br>zur <b>Marke.</b></h1>
+    <p class="lead" style="margin-top:24px;">Wie ein <b>Agent Skill</b> bestehende Inhalte automatisch im
+      Look &amp; Feel der eigenen Marke neu erzeugt &mdash; recherchiert, gestaltet, fertig.</p>
+    <div class="footer-band">Beispiel: eine Folie aus dem Vortrag &bdquo;Beyond Vibe Coding&ldquo;.</div>
+  </section>
+
+  <!-- 2: The challenge -->
+  <section class="slide">
+    <div class="eyebrow">Die Ausgangslage</div>
+    <h2>Gute Inhalte, aber <b>nicht im Marken-Look</b></h2>
+    <p class="lead">Folien, Grafiken und Infografiken entstehen oft schnell &mdash; mit beliebigen Farben,
+      Schriften und Formen. Inhaltlich top, aber sie sehen nicht nach <b>andrena</b> aus.</p>
+    <p class="lead" style="margin-top:20px;">Sie alle von Hand ins Corporate Design zu bringen kostet Zeit und Design-Know-how.
+      Genau hier hilft ein <b>Agent Skill</b>: eine einmal beschriebene, wiederverwendbare Arbeitsanweisung
+      f&uuml;r den KI-Agenten.</p>
+    <div class="footer-band">Im Folgenden: dieselbe Folie &mdash; vorher / nachher.</div>
+  </section>
+
+  <!-- 3: Before / After -->
+  <section class="slide">
+    <div class="eyebrow">Vorher / Nachher &mdash; gleiche Inhalte</div>
+    <div class="compare">
+      <div class="panel before">
+        <span class="tag">VORHER &middot; generisch</span>
+        <img src="images/before-generic.png" alt="Originalfolie in generischem Türkis" />
+        <div class="cap"><b>Beliebige Farbwelt</b> (Türkis), Standard-Stil &mdash; kein Bezug zur Marke.</div>
+      </div>
+      <div class="panel after">
+        <span class="tag">NACHHER &middot; andrena-Marke</span>
+        <img src="images/after-andrena.png" alt="Neu erzeugte Folie im andrena-Markenstil" />
+        <div class="cap"><b>andrena-Blau, Schrift, Bildmarke</b> &mdash; gleicher Inhalt, klar als andrena erkennbar.</div>
+      </div>
+    </div>
+    <div class="arrow-mid">&rarr;</div>
+  </section>
+
+  <!-- 4: How it works -->
+  <section class="slide">
+    <div class="eyebrow">So macht es der Agent Skill</div>
+    <h2>Vier Schritte &mdash; <b>vollautomatisch</b></h2>
+    <div class="steps">
+      <div class="step"><div class="num">1</div><h3>Marke erfassen</h3>
+        <p>Der Agent &ouml;ffnet die Webseite der Marke und liest Farben, Schriften und den Stil aus &mdash; inkl. Screenshots als Vorlage.</p></div>
+      <div class="step"><div class="num">2</div><h3>Inhalt recherchieren</h3>
+        <p>Per Websuche werden die fachlichen Fakten zum Thema zusammengetragen, damit der Text korrekt ist.</p></div>
+      <div class="step"><div class="num">3</div><h3>Anweisung formulieren</h3>
+        <p>Marken-Look und Inhalte werden zu einer pr&auml;zisen Bild-Anweisung kombiniert.</p></div>
+      <div class="step"><div class="num">4</div><h3>Bild erzeugen</h3>
+        <p>Die KI erstellt das fertige Bild im Marken-Stil &mdash; in unter einer Minute, beliebig wiederholbar.</p></div>
+    </div>
+    <div class="footer-band">Einmal als Skill beschrieben &mdash; danach auf Zuruf f&uuml;r jedes Thema und jede Marke nutzbar.</div>
+  </section>
+
+  <!-- 5: Takeaway -->
+  <section class="slide">
+    <div class="eyebrow">Warum das z&auml;hlt</div>
+    <h2>Ein Skill &mdash; <b>immer wieder nutzbar</b></h2>
+    <ul class="points">
+      <li><b>Konsistenz:</b> Inhalte sehen automatisch nach der eigenen Marke aus.</li>
+      <li><b>Tempo:</b> Aus Stunden Design-Arbeit werden Minuten &mdash; ohne Design-Tool.</li>
+      <li><b>Wiederholbar:</b> Der Agent Skill ist die einmal beschriebene Anleitung, die der Agent jederzeit erneut ausf&uuml;hrt.</li>
+      <li><b>&Uuml;bertragbar:</b> Funktioniert f&uuml;r jede Marke &mdash; einfach eine andere Webseite angeben.</li>
+    </ul>
+    <div class="footer-band">Das ist &bdquo;Agentic Engineering&ldquo;: nicht ein einzelnes Bild, sondern eine wiederverwendbare F&auml;higkeit des Agenten.</div>
+  </section>
+
+</div>
+
+<div class="nav">
+  <button id="prev" aria-label="zur&uuml;ck">&larr;</button>
+  <span class="count" id="count">1 / 5</span>
+  <button id="next" aria-label="weiter">&rarr;</button>
+</div>
+<div class="hint">Pfeiltasten &larr; &rarr; oder Leertaste zum Bl&auml;ttern</div>
+
+<script>
+  const slides = [...document.querySelectorAll(".slide")];
+  let i = 0;
+  const progress = document.getElementById("progress");
+  const count = document.getElementById("count");
+  function show(n) {
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach((s, idx) => s.classList.toggle("active", idx === i));
+    progress.style.width = ((i + 1) / slides.length * 100) + "%";
+    count.textContent = (i + 1) + " / " + slides.length;
+  }
+  document.getElementById("next").onclick = () => show(i + 1);
+  document.getElementById("prev").onclick = () => show(i - 1);
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") { e.preventDefault(); show(i + 1); }
+    else if (e.key === "ArrowLeft" || e.key === "PageUp") { e.preventDefault(); show(i - 1); }
+    else if (e.key === "Home") show(0);
+    else if (e.key === "End") show(slides.length - 1);
+  });
+  show(0);
+</script>
+</body>
+</html>
